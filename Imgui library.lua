@@ -1632,8 +1632,6 @@ function ImGui:CreateWindow(WindowConfig)
 		TabButton.Text = Name
 		TabButton.Visible = true
 		TabButton.Parent = ToolBar
-		TabButton.BackgroundColor3 = Color3.fromRGB(10, 20, 60)
-		TabButton.TextColor3 = Color3.fromRGB(180, 200, 255)
 		Config.Button = TabButton
 
 		local AutoSizeAxis = WindowConfig.AutoSize or "Y"
