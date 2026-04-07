@@ -1632,6 +1632,10 @@ function ImGui:CreateWindow(WindowConfig)
 		TabButton.Text = Name
 		TabButton.Visible = true
 		TabButton.Parent = ToolBar
+		-- Rounded corners on tab buttons
+		local UICorner = Instance.new("UICorner")
+		UICorner.CornerRadius = UDim.new(0, 6)
+		UICorner.Parent = TabButton
 		Config.Button = TabButton
 
 		local AutoSizeAxis = WindowConfig.AutoSize or "Y"
