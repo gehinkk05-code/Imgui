@@ -594,7 +594,7 @@ function ImGui:ContainerClass(Frame: Frame, Class, Window)
 		function Config:UpdateLineNumbers()
 			if not Config.LineNumbers then return end
 
-			local LinesCount = #Source.Text:split("\\n")
+			local LinesCount = #Source.Text:split("\n")
 			local Format = Config.LinesFormat or "%s"
 
 			--// Update lines text
@@ -634,7 +634,7 @@ function ImGui:ContainerClass(Frame: Frame, Class, Window)
 			if not Config.Enabled then return end
 
 			local MaxLines = Config.MaxLines or 100
-			local NewString = "\\n" .. ImGui:Concat({...}, " ") 
+			local NewString = "\n" .. ImGui:Concat({...}, " ") 
 
 			Source.Text ..= NewString
 			Config:UpdateLineNumbers()
@@ -643,7 +643,7 @@ function ImGui:ContainerClass(Frame: Frame, Class, Window)
 				Config:UpdateScroll()
 			end
 
-			local Lines = Source.Text:split("\\n")
+			local Lines = Source.Text:split("\n")
 			if #Lines > MaxLines then
 				Source.Text = Source.Text:sub(#Lines[1]+2)
 			end
@@ -1623,11 +1623,7 @@ function ImGui:CreateWindow(WindowConfig)
 		local Open = not WindowConfig.Open
 		WindowConfig.Open = Open
 		return WindowConfig:SetOpen(Open)
-	end)
-
-	--// Tab system variables
-	local Tabs = {}
-	local ActiveTab = nil
+	end)	
 
 	function WindowConfig:CreateTab(Config)
 		local Name = Config.Name or ""
@@ -1636,18 +1632,16 @@ function ImGui:CreateWindow(WindowConfig)
 		TabButton.Text = Name
 		TabButton.Visible = true
 		TabButton.Parent = ToolBar
-		
 		-- Rounded corners on tab buttons
 		local UICorner = Instance.new("UICorner")
 		UICorner.CornerRadius = UDim.new(0, 6)
 		UICorner.Parent = TabButton
-		
 		Config.Button = TabButton
 
 		local AutoSizeAxis = WindowConfig.AutoSize or "Y"
 		local Content: Frame = Body.Template:Clone()
 		Content.AutomaticSize = Enum.AutomaticSize[AutoSizeAxis]
-		Content.Visible = false
+		Content.Visible = Config.Visible or false
 		Content.Name = Name
 		Content.Parent = Body
 		Config.Content = Content
@@ -1657,9 +1651,6 @@ function ImGui:CreateWindow(WindowConfig)
 		elseif AutoSizeAxis == "X" then
 			Content.Size = UDim2.fromScale(0, 1)
 		end
-
-		--// Store tab
-		table.insert(Tabs, Config)
 
 		TabButton.Activated:Connect(function()
 			WindowConfig:ShowTab(Config)
@@ -1679,13 +1670,6 @@ function ImGui:CreateWindow(WindowConfig)
 			Content:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 				local Size = Config:GetContentSize()
 				self:SetSize(Size)
-			end)
-		end
-
-		--// Auto-select first tab
-		if #Tabs == 1 then
-			task.delay(0.1, function()
-				WindowConfig:ShowTab(Config)
 			end)
 		end
 
@@ -1719,12 +1703,7 @@ function ImGui:CreateWindow(WindowConfig)
 
 	--// Tab change system 
 	function WindowConfig:ShowTab(TabClass: SharedTable)
-		if ActiveTab == TabClass then return self end
-		
 		local TargetPage: Frame = TabClass.Content
-		if not TargetPage then return self end
-
-		ActiveTab = TabClass
 
 		--// Page animation
 		if not TargetPage.Visible and not TabClass.NoAnimation then
@@ -1733,20 +1712,17 @@ function ImGui:CreateWindow(WindowConfig)
 
 		--// Hide other tabs
 		for _, Page in next, Body:GetChildren() do
-			if Page:IsA("Frame") and Page.Name ~= "UIListLayout" then
-				Page.Visible = Page == TargetPage
-			end
+			Page.Visible = Page == TargetPage
 		end
 
 		--// Page animation
 		ImGui:Tween(TargetPage, {
 			Position = UDim2.fromOffset(0, 0)
 		})
-		
 		return self
 	end
 
-	function WindowConfig:Center()
+	function WindowConfig:Center() --// Without an Anchor point
 		local Size = Window.AbsoluteSize
 		local Position = UDim2.new(0.5,-Size.X/2,0.5,-Size.Y/2)
 		self:SetPosition(Position)
@@ -1797,7 +1773,7 @@ function ImGui:CreateModal(Config)
 	--// Create Window
 	local Window = self:CreateWindow(Config)
 	Config = Window:CreateTab({
-		Name = "Modal"
+		Visible = true
 	})
 
 	--// Disable other windows
@@ -1834,6 +1810,3 @@ ImGui.FullScreenGui = ImGui:CreateInstance("ScreenGui", GuiParent, {
 })
 
 return ImGui
-'''
-
-print(code)
